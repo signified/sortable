@@ -6,6 +6,7 @@ function sortable(selectors, options) {
     sortStringClasses: ['sortable-sort-string'],
     sortNumberClasses: ['sortable-sort-number'],
     sortDateClasses: ['sortable-sort-date'],
+    sortDotDecimalClasses: ['sortable-sort-dot-decimal'],
     sortAscendingClasses: ['sortable-sort-ascending'],
     sortDescendingClasses: ['sortable-sort-descending']
   };
@@ -15,18 +16,11 @@ function sortable(selectors, options) {
     ...options
   };
 
-  const isDate = function(value) {
-    const date = new Date(value);
-    return (date !== 'Invalid Date') && isNumber(date);
-  }
-
-  const isNumber = function(value) {
-    return !isNaN(value);
-  }
-
   const getDataType = function(tBody, cellIndex) {
+
     let dataType = 'string';
     let values = [];
+
     for (let row of tBody.rows) {
       for (i = 0; i < row.cells.length; i++) {
         if (i == cellIndex) {
@@ -34,13 +28,32 @@ function sortable(selectors, options) {
         }
       }
     }
+
     if (values.every(isDate)) {
       dataType = 'date';
     }
+
     if (values.every(isNumber)) {
       dataType = 'number';
     }
+
+    for (let value of values) {
+      const parts = value.split('.');
+      if (parts.length >= 3 && parts.every(isNumber)) {
+        dataType = 'dot-decimal';
+      }
+    }
+
     return dataType;
+  }
+
+  const isDate = function(value) {
+    const date = new Date(value);
+    return (date !== 'Invalid Date') && isNumber(date);
+  }
+
+  const isNumber = function(value) {
+    return !isNaN(value);
   }
 
   const tables = document.querySelectorAll(selectors);
@@ -66,6 +79,7 @@ function sortable(selectors, options) {
       button.addEventListener('click', function () {
 
         const dataType = getDataType(tBody, cellIndex);
+        console.log(dataType);
 
         let direction = 'ascending';
         if (th.hasAttribute('aria-sort') && th.getAttribute('aria-sort').toLowerCase() == 'ascending') {
@@ -122,6 +136,18 @@ function sortable(selectors, options) {
                 return aCellContent - bCellContent;
               } else {
                 return bCellContent - aCellContent;
+              }
+              break;
+            case 'dot-decimal':
+              th.classList.add(...options.sortDotDecimalClasses);
+              aCell.classList.add(...options.sortDotDecimalClasses);
+              bCell.classList.add(...options.sortDotDecimalClasses);
+              aCellContent = aCellContent.split('.').map(n => +n+100000).join('.');
+              bCellContent = bCellContent.split('.').map(n => +n+100000).join('.');
+              if (direction == 'ascending') {
+                return (aCellContent > bCellContent) ? 1 : -1;
+              } else {
+                return (aCellContent > bCellContent) ? -1 : 0;
               }
               break;
             default:
