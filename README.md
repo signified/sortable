@@ -13,7 +13,7 @@ Super simple, completely configurable, sortable tables.
     or via jsDeliver:
 
     ```html
-    <script src="https://cdn.jsdelivr.net/gh/signified/sortable@1.0.2/sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/signified/sortable@1.0.3/sortable.min.js"></script>
     ```
 
 1. Add the stylesheet in the `<head>` (optional)
@@ -25,7 +25,7 @@ Super simple, completely configurable, sortable tables.
     or via jsDeliver:
 
     ```html
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/signified/sortable@1.0.2/sortable.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/signified/sortable@1.0.3/sortable.min.css">
     ```
 
 **Note:** The supplied stylesheet applies default styling rules. Feel free to use it as a starting point or, if you're using a framework like Bootstrap or Tailwind CSS, make use of the `options` to take full advantage of the component and utility classes these frameworks provide.
@@ -62,6 +62,9 @@ An object representing optional configuration options.
 
   // An array of class attribute values to apply to the <th> and each <td> of the currently sorted column that has been sorted as a date.
   sortDateClasses: ['sortable-sort-date'],
+
+  // An array of class attribute values to apply to the <th> and each <td> of the currently sorted column that has been sorted as a dot decimal.
+  sortDotDecimalClasses: ['sortable-sort-dot-decimal'],
 
   // An array of class attribute values to apply to the <th> and each <td> of the currently sorted column that has been sorted in ascending order.
   sortAscendingClasses: ['sortable-sort-ascending'],
