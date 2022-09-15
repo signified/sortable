@@ -145,9 +145,9 @@ function sortable(selectors, options) {
               aCellContent = aCellContent.split('.').map(n => +n+100000).join('.');
               bCellContent = bCellContent.split('.').map(n => +n+100000).join('.');
               if (direction == 'ascending') {
-                return (aCellContent > bCellContent) ? 1 : -1;
+                return aCellContent.localeCompare(bCellContent);
               } else {
-                return (aCellContent > bCellContent) ? -1 : 0;
+                return bCellContent.localeCompare(aCellContent);
               }
               break;
             default:
@@ -155,9 +155,9 @@ function sortable(selectors, options) {
               aCell.classList.add(...options.sortStringClasses);
               bCell.classList.add(...options.sortStringClasses);
               if (direction == 'ascending') {
-                return (aCellContent > bCellContent) ? 1 : -1;
+                return aCellContent.localeCompare(bCellContent);
               } else {
-                return (aCellContent > bCellContent) ? -1 : 0;
+                return bCellContent.localeCompare(aCellContent);
               }
           }
 
