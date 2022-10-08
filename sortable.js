@@ -79,7 +79,6 @@ function sortable(selectors, options) {
       button.addEventListener('click', function () {
 
         const dataType = getDataType(tBody, cellIndex);
-        console.log(dataType);
 
         let direction = 'ascending';
         if (th.hasAttribute('aria-sort') && th.getAttribute('aria-sort').toLowerCase() == 'ascending') {
