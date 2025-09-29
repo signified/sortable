@@ -13,7 +13,7 @@ function sortable(selectors, options) {
   };
 
   const getDataType = function(tBody, cellIndex) {
-    let dataType = 'default';
+    let dataType = 'string';
     let values = [];
     for (let row of tBody.rows) {
       for (let i = 0; i < row.cells.length; i++) {
@@ -25,6 +25,9 @@ function sortable(selectors, options) {
     if (values.every(isDate)) {
       dataType = 'date';
     }
+    if (values.every(isNumber)) {
+      dataType = 'number';
+    }
     return dataType;
   };
 
@@ -33,20 +36,24 @@ function sortable(selectors, options) {
     if (value instanceof Date) {
       return isValidDate(value);
     }
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       const dateStringRegex = /^[0-9A-Za-z\s:\-\/,]+$/;
       if (!dateStringRegex.test(value)) return false;
       const date = new Date(value);
       return isValidDate(date);
     }
-    if (typeof value === "number") {
+    if (typeof value === 'number') {
       const date = new Date(value);
       return isValidDate(date);
     }
     return false;
   };
 
-  const sortDefault = function(first, second) {
+  const isNumber = function(value) {
+    return !isNaN(value);
+  };
+
+  const sortString = function(first, second) {
     return first.localeCompare(second, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true});
   };
 
@@ -60,7 +67,15 @@ function sortable(selectors, options) {
 
     const tHead = table.tHead;
 
+    if (!tHead) {
+      return;
+    }
+
     const tBody = table.tBodies[0];
+
+    if (!tBody) {
+      return;
+    }
 
     const rows = Array.from(tBody.rows);
 
@@ -113,8 +128,15 @@ function sortable(selectors, options) {
               bCellContent = new Date(bCellContent);
               return (direction == 'ascending') ? aCellContent - bCellContent : bCellContent - aCellContent;
               break;
+            case 'number':
+              aCellContent = new Number(aCellContent);
+              bCellContent = new Number(bCellContent);
+              return (direction == 'ascending') ? aCellContent - bCellContent : bCellContent - aCellContent;
+              break;
             default:
-              return (direction == 'ascending') ? sortDefault(aCellContent, bCellContent) : sortDefault(bCellContent, aCellContent)
+              aCellContent = new String(aCellContent);
+              bCellContent = new String(bCellContent);
+              return (direction == 'ascending') ? sortString(aCellContent, bCellContent) : sortString(bCellContent, aCellContent)
           }
 
         });
