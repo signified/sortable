@@ -13,7 +13,7 @@ Super simple, completely configurable, sortable tables.
     or via jsDeliver:
 
     ```html
-    <script src="https://cdn.jsdelivr.net/gh/signified/sortable@2.0.0/sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/signified/sortable@2.1.0/sortable.min.js"></script>
     ```
 
 1. Add the stylesheet in the `<head>` (optional)
@@ -25,7 +25,7 @@ Super simple, completely configurable, sortable tables.
     or via jsDeliver:
 
     ```html
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/signified/sortable@2.0.0/sortable.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/signified/sortable@2.1.0/sortable.min.css">
     ```
 
 **Note:** The supplied stylesheet applies default styling rules. Feel free to use it as a starting point or, if you're using a framework like Bootstrap or Tailwind CSS, make use of the `options` to take full advantage of the component and utility classes these frameworks provide.
