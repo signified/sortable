@@ -1,147 +1,107 @@
-function sortable(selectors, options) {
+function sortable(selectors, options = {}) {
 
-  let defaultOptions = {
+  const defaultOptions = {
     buttonClasses: ['sortable-button'],
     sortedClasses: ['sortable-sorted'],
     sortedAscendingClasses: ['sortable-sorted-ascending'],
     sortedDescendingClasses: ['sortable-sorted-descending']
   };
 
-  options = {
-    ...defaultOptions,
-    ...options
-  };
+  options = { ...defaultOptions, ...options };
 
-  const getDataType = function(tBody, cellIndex) {
-    let dataType = 'string';
-    let values = [];
-    for (let row of tBody.rows) {
-      for (let i = 0; i < row.cells.length; i++) {
-        if (i == cellIndex) {
-          values.push(row.cells[i].textContent);
-        }
-      }
-    }
-    if (values.every(isDate)) {
-      dataType = 'date';
-    }
-    if (values.every(isNumber)) {
-      dataType = 'number';
-    }
-    return dataType;
-  };
-
-  const isDate = function(value) {
+  const isDate = (value) => {
     const isValidDate = (date) => date instanceof Date && !isNaN(date.getTime());
-    if (value instanceof Date) {
-      return isValidDate(value);
-    }
+    if (value instanceof Date) return isValidDate(value);
     if (typeof value === 'string') {
-      const dateStringRegex = /^[0-9A-Za-z\s:\-\/,]+$/;
-      if (!dateStringRegex.test(value)) return false;
-      const date = new Date(value);
-      return isValidDate(date);
+      if (!/^[0-9A-Za-z\s:\-\/,]+$/.test(value)) return false;
+      return isValidDate(new Date(value));
     }
-    if (typeof value === 'number') {
-      const date = new Date(value);
-      return isValidDate(date);
-    }
+    if (typeof value === 'number') return isValidDate(new Date(value));
     return false;
   };
 
-  const isNumber = function(value) {
-    return !isNaN(value);
+  const isNumber = (value) => !isNaN(value);
+
+  const getDataType = (tBody, cellIndex) => {
+    const values = Array.from(tBody.rows, row => row.cells[cellIndex]?.textContent || '');
+    if (values.every(isDate)) return 'date';
+    if (values.every(isNumber)) return 'number';
+    return 'string';
   };
 
-  const sortString = function(first, second) {
-    return first.localeCompare(second, navigator.languages[0] || navigator.language, {numeric: true, ignorePunctuation: true});
-  };
+  const sortString = (a, b) =>
+    a.localeCompare(b, navigator.languages?.[0] || navigator.language, {
+      numeric: true,
+      ignorePunctuation: true
+    });
 
-  const tables = document.querySelectorAll(selectors);
+  document.querySelectorAll(selectors).forEach((table) => {
 
-  tables.forEach(function (table) {
-
-    if (table.tagName.toLowerCase() !== 'table') {
-      return;
-    }
+    if (table.tagName.toLowerCase() !== 'table') return;
 
     const tHead = table.tHead;
-
-    if (!tHead) {
-      return;
-    }
-
     const tBody = table.tBodies[0];
 
-    if (!tBody) {
-      return;
-    }
+    if (!tHead || !tBody) return;
 
-    const rows = Array.from(tBody.rows);
+    tHead.querySelectorAll('th').forEach((th, cellIndex) => {
 
-    tHead.querySelectorAll('th').forEach(function (th, cellIndex) {
-
-      th.innerHTML = `<button type="button">${th.innerText}</button>`;
-      let button = th.firstChild;
+      th.innerHTML = `<button type="button">${th.textContent.trim()}</button>`;
+      const button = th.firstChild;
       button.classList.add(...options.buttonClasses);
 
-      button.addEventListener('click', function () {
+      button.addEventListener('click', () => {
 
         const dataType = getDataType(tBody, cellIndex);
 
-        let direction = 'ascending';
-        if (th.hasAttribute('aria-sort') && th.getAttribute('aria-sort').toLowerCase() == 'ascending') {
-          direction = 'descending';
-        }
+        const direction =
+          th.getAttribute('aria-sort')?.toLowerCase() === 'ascending'
+            ? 'descending'
+            : 'ascending';
 
-        for (let row of table.rows) {
-          for (let i = 0; i < row.cells.length; i++) {
-            let cell = row.cells[i];
-            for (let option in options) {
-              cell.classList.remove(...options[option]);
-            }
-            cell.removeAttribute('aria-sort');
-            if (i == cellIndex) {
-              cell.classList.add(...options.sortedClasses);
-              if (direction == 'ascending') {
-                cell.classList.add(...options.sortedAscendingClasses);
-              } else {
-                cell.classList.add(...options.sortedDescendingClasses);
-              }
-            }
-          }
-        }
+        table.querySelectorAll('th').forEach((header) => header.removeAttribute('aria-sort'));
+        table.querySelectorAll('td, th').forEach((cell) => {
+          Object.values(options).forEach((classes) => cell.classList.remove(...classes));
+        });
 
         th.setAttribute('aria-sort', direction);
 
-        rows.sort(function(a, b) {
-
-          const aCell = a.cells[cellIndex];
-          const bCell = b.cells[cellIndex];
-
-          let aCellContent = aCell.textContent.toLowerCase().trim();
-          let bCellContent = bCell.textContent.toLowerCase().trim();
-
+        const rowData = Array.from(tBody.rows).map((row) => {
+          const cellText = row.cells[cellIndex]?.textContent.trim() ?? '';
           switch (dataType) {
             case 'date':
-              aCellContent = new Date(aCellContent);
-              bCellContent = new Date(bCellContent);
-              return (direction == 'ascending') ? aCellContent - bCellContent : bCellContent - aCellContent;
-              break;
+              return { row, value: new Date(cellText).getTime() };
             case 'number':
-              aCellContent = new Number(aCellContent);
-              bCellContent = new Number(bCellContent);
-              return (direction == 'ascending') ? aCellContent - bCellContent : bCellContent - aCellContent;
-              break;
+              return { row, value: Number(cellText) };
             default:
-              aCellContent = new String(aCellContent);
-              bCellContent = new String(bCellContent);
-              return (direction == 'ascending') ? sortString(aCellContent, bCellContent) : sortString(bCellContent, aCellContent)
+              return { row, value: cellText.toLowerCase() };
           }
-
         });
 
-        tBody.append(...rows);
+        rowData.sort((a, b) => {
+          if (a.value === b.value) return 0;
+          if (dataType === 'string') {
+            return direction === 'ascending'
+              ? sortString(a.value, b.value)
+              : sortString(b.value, a.value);
+          }
+          return direction === 'ascending'
+            ? a.value - b.value
+            : b.value - a.value;
+        });
+
+        tBody.append(...rowData.map(item => item.row));
+
+        Array.from(table.rows).forEach((row) => {
+          const cell = row.cells[cellIndex];
+          if (!cell) return;
+          cell.classList.add(...options.sortedClasses);
+          cell.classList.add(
+            ...(direction === 'ascending'
+              ? options.sortedAscendingClasses
+              : options.sortedDescendingClasses)
+          );
+        });
 
       });
 
